@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    {% load static i18n %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% trans "Add Budget" %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .header-bg {
+      background-color: #1e40af;
+    }
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: #1e40af;
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
+    <nav class="flex space-x-3 md:space-x-5">
+      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
+      </a>
+      <form action="uz" method="post" class="flex items-center">
+        {% csrf_token %}
+        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
+          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
+          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+    <!-- Byudjet qo‘shish formasi -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Add Budget" %}</h2>
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Category" %}</label>
+            <select name="category" id="category" class="w-full p-2 border rounded-md input-field" required>
+              <option value="" disabled selected>{% trans "Select a category" %}</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if form.category.value == category.id %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+            {% if form.category.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.category.errors }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Budget Amount" %}</label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              class="w-full p-2 border rounded-md input-field"
+              placeholder="{% trans 'Enter budget amount' %}"
+              value="{{ form.amount.value|default_if_none:'0' }}"
+              required
+            >
+            {% if form.amount.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.amount.errors }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Currency" %}</label>
+            <select name="currency" id="currency" class="w-full p-2 border rounded-md input-field" required>
+              <option value="UZS" {% if form.currency.value == 'UZS' %}selected{% endif %}>UZS</option>
+              <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
+              <option value="EUR" {% if form.currency.value == 'EUR' %}selected{% endif %}>EUR</option>
+            </select>
+            {% if form.currency.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.currency.errors }}</p>
+            {% endif %}
+          </div>
+          <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-medium text-sm">{% trans "Add Budget" %}</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

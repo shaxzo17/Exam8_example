@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    {% load static i18n %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% trans "Add Diagnosis" %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Qo‘shimcha CSS uchun soddalashtirilgan uslub */
+    .header-bg {
+      background-color: #1e40af; /* Toza ko‘k rang */
+    }
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: #1e40af;
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
+    <nav class="flex space-x-3 md:space-x-5">
+      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
+      </a>
+      <!-- Til tanlash menyusi -->
+      <form action="#" method="post" class="flex items-center">
+        {% csrf_token %}
+        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
+          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
+          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+    <!-- Diagnostika qo‘shish formasi -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Add Diagnosis" %}</h2>
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Diagnosis Message" %}</label>
+            <textarea
+              name="message"
+              id="message"
+              rows="4"
+              class="w-full p-2 border rounded-md input-field focus:outline-none text-sm"
+              placeholder="{% trans 'Enter your diagnosis message...' %}"
+              required
+            >{{ form.message.value|default_if_none:'' }}</textarea>
+            {% if form.message.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.message.errors }}</p>
+            {% endif %}
+          </div>
+          <button
+            type="submit"
+            class="w-full btn-primary text-white py-2 rounded-md font-medium text-sm hover:bg-blue-700"
+          >
+            {% trans "Save Diagnosis" %}
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Oldingi diagnostikalar ro‘yxati -->
+    <section>
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Previous Diagnoses" %}</h2>
+      <div class="space-y-4">
+        {% for diagnosis in diagnoses %}
+          <div class="bg-white p-4 rounded-lg shadow-md flex items-start card-hover">
+            <i class="fa-solid fa-clipboard-list text-2xl text-blue-600 mr-3"></i>
+            <div>
+              <p class="text-gray-700 text-sm">{{ diagnosis.message|truncatechars:80 }}</p>
+              <p class="text-gray-500 text-xs mt-1">{% trans "Created at" %}: {{ diagnosis.created_at|date:"Y-m-d H:i" }}</p>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-gray-500 text-sm text-center">{% trans "No diagnoses yet" %}</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  {% load static i18n %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ category.name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .header-bg {
+      background-color: #1e40af;
+    }
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: #1e40af;
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
+    <nav class="flex space-x-3 md:space-x-5">
+      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
+      </a>
+      <form action="uz" method="post" class="flex items-center">
+        {% csrf_token %}
+        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
+          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
+          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+    <!-- Category Title -->
+    <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+      <i class="fa-solid {{ category.icon|default:'fa-folder' }} text-2xl text-blue-600"></i>
+      <span>{{ category.name }}</span>
+    </h1>
+
+    <!-- Stats -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Overview" %}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
+          <h3 class="text-sm font-medium text-green-600">{% trans "Income" %}</h3>
+          <p class="text-lg font-bold text-gray-800">{{ total_income|default:0 }} {{ currency|default:'UZS' }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
+          <h3 class="text-sm font-medium text-red-600">{% trans "Expense" %}</h3>
+          <p class="text-lg font-bold text-gray-800">{{ total_expense|default:0 }} {{ currency|default:'UZS' }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transactions list -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Transactions" %}</h2>
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        {% if transactions %}
+          <ul class="space-y-2">
+            {% for t in transactions %}
+              <li class="border-b py-2 flex justify-between items-center">
+                <div>
+                  <p class="text-sm text-gray-700">{{ t.date|date:"Y-m-d H:i" }}</p>
+                  <p class="text-sm text-gray-500">{{ t.note }}</p>
+                </div>
+                <span class="{% if t.type == 'income' %}text-green-600{% else %}text-red-600{% endif %} font-semibold text-sm">
+                  {{ t.amount }} {{ t.currency }}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-gray-500 text-sm text-center py-4">{% trans "No transactions yet" %}</p>
+        {% endif %}
+      </div>
+    </section>
+
+            <!-- Pie chart -->
+<!-- Pie chart -->
+<section class="mb-6">
+  <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Statistics Chart" %}</h2>
+  <div class="bg-white p-4 rounded-lg shadow-md flex justify-center">
+    <div class="chart-container" style="width: 250px; height: 250px;">
+      <canvas id="balanceChart"></canvas>
+    </div>
+  </div>
+  <script>
+    const ctx = document.getElementById('balanceChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['{% trans "Income" %}', '{% trans "Expense" %}'],
+        datasets: [{
+          data: [{{ income|default:0 }}, {{ expense|default:0 }}],
+          backgroundColor: ['#34D399', '#F87171'],
+          borderWidth: 1,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false, // ✅ allows fixed size (width/height from CSS)
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { font: { size: 12 } }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                label += context.parsed + ' {{ currency }}';
+                return label;
+              }
+            }
+          }
+        },
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+  </script>
+</section>
+
+
+  </main>
+
+</body>
+</html>

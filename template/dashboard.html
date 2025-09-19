@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  {% load static i18n %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% trans "Dashboard" %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .header-bg {
+      background-color: #1e40af;
+    }
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: #1e40af;
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+    }
+    .btn-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 20;
+    }
+    .btn-circle:hover {
+      transform: scale(1.1);
+    }
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 250px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
+    <nav class="flex space-x-3 md:space-x-5">
+      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
+      </a>
+      <form action="uz" method="post" class="flex items-center">
+        {% csrf_token %}
+        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
+          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
+          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+
+    <!-- Balans qismi -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Overview" %}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
+          <h3 class="text-sm font-medium text-green-600">{% trans "Income" %}</h3>
+          <p class="text-lg font-bold text-gray-800">{{ income|default:0 }} {{ currency }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
+          <h3 class="text-sm font-medium text-red-600">{% trans "Expense" %}</h3>
+          <p class="text-lg font-bold text-gray-800">{{ expense|default:0 }} {{ currency }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
+          <h3 class="text-sm font-medium text-blue-600">{% trans "Balance" %}</h3>
+          <p class="text-lg font-bold text-gray-800">{{ balance|default:0 }} {{ currency }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kategoriyalar -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Categories" %}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for cat in categories %}
+          <a href="{% url 'category_detail' cat.id %}?currency={{ currency }}" class="bg-white p-4 rounded-lg shadow-md card-hover flex items-center">
+            <i class="fa-solid {{ cat.icon|default:'fa-folder' }} text-2xl text-blue-600 mr-3"></i>
+            <p class="text-sm font-medium text-gray-800">{{ cat.name }}</p>
+          </a>
+        {% empty %}
+          <p class="text-gray-500 text-sm text-center col-span-full">{% trans "No categories yet" %}</p>
+        {% endfor %}
+      </div>
+    </section>
+
+        <!-- Pie chart -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Statistics Chart" %}</h2>
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <div class="chart-container">
+          <canvas id="balanceChart"></canvas>
+        </div>
+      </div>
+      <script>
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['{% trans "Income" %}', '{% trans "Expense" %}'],
+            datasets: [{
+              data: [{{ income|default:0 }}, {{ expense|default:0 }}],
+              backgroundColor: ['#34D399', '#F87171'],
+              borderWidth: 1,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true, // Dumaloq bo‘lishi uchun aspect ratio saqlanadi
+            plugins: {
+              legend: { position: 'top', labels: { font: { size: 12 } } },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    label += context.parsed + ' {{ currency }}';
+                    return label;
+                  }
+                }
+              }
+            },
+            animation: {
+              animateScale: true,
+              animateRotate: true
+            }
+          }
+        });
+      </script>
+    </section>
+
+    <!-- Byudjet ogohlantirishlari -->
+    <section class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Budget Warnings" %}</h2>
+      <div class="space-y-4">
+        {% for warning in budget_warnings %}
+          <div class="bg-red-100 p-4 rounded-lg shadow-md">
+            <p class="text-sm text-red-600">{% trans "Category" %}: {{ warning.category }}</p>
+            <p class="text-sm text-red-600">{% trans "Spent" %}: {{ warning.spent }} {{ currency }}</p>
+            <p class="text-sm text-red-600">{% trans "Budget" %}: {{ warning.budget }} {{ currency }}</p>
+          </div>
+        {% empty %}
+          <p class="text-gray-500 text-sm text-center">{% trans "No budget warnings" %}</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Add Transaction tugmasi -->
+    <a href="{% url 'add_transaction' %}?currency={{ currency }}" class="btn-primary text-white btn-circle">
+      <i class="fa-solid fa-plus text-xl"></i>
+    </a>
+  </main>
+
+</body>
+</html>

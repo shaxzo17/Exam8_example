@@ -1,0 +1,124 @@
+/* Reset */
+* {
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+body {
+  background: #f6f7fb;
+  color: #333;
+}
+
+/* Navbar */
+nav {
+  background: #fff;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+nav h1 {
+  font-size: 20px;
+  color: #444;
+}
+nav a {
+  text-decoration: none;
+  color: #444;
+  margin-left: 20px;
+  font-weight: 500;
+}
+nav a.active {
+  color: #4e73df;
+  border-bottom: 2px solid #4e73df;
+  padding-bottom: 3px;
+}
+
+/* Container */
+.container {
+  padding: 30px;
+}
+
+/* Cards */
+.card {
+  background: linear-gradient(135deg,#4e73df,#224abe);
+  color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 300px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+.card h3 { font-size: 18px; margin-bottom: 10px; }
+.card p { font-size: 14px; opacity: 0.8; }
+.card .balance { font-size: 22px; font-weight: 600; margin-top: 15px; }
+
+/* Balance Overview */
+.balance-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.balance-box h2 { font-size: 24px; color: #224abe; }
+.balance-box span { font-size: 16px; color: #666; }
+
+/* Transaction List */
+.transaction-list {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.transaction-item:last-child { border: none; }
+.transaction-item span { font-size: 15px; }
+.transaction-item .amount { font-weight: bold; color: #4e73df; }
+
+/* Forms */
+form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  max-width: 400px;
+}
+form label { display: block; margin-bottom: 5px; font-weight: 500; }
+form input, form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+form button {
+  background: #4e73df;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+form button:hover { background: #224abe; }
+
+/* Floating Button */
+.add-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #4e73df;
+  color: #fff;
+  font-size: 26px;
+  border: none;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}

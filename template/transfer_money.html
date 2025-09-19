@@ -1,0 +1,18 @@
+<form method="post">
+  {% csrf_token %}
+  <input type="number" name="amount" step="0.01" placeholder="Summani kiriting" required>
+  <select name="operation">
+    <option value="income">Kirim</option>
+    <option value="expense">Chiqim</option>
+  </select>
+
+  <select name="category" required>
+    <option value="">Kategoriya tanlang</option>
+    {% for cat in categories %}
+      <option value="{{ cat.id }}">{{ cat.name }} ({{ cat.type }})</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Tasdiqlash</button>
+</form>
+
