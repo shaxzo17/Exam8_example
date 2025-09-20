@@ -13,6 +13,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     icon = models.CharField(max_length=50, blank=True, null=True, default="fa-folder")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name} ({self.type})"
@@ -38,29 +39,36 @@ class Card(models.Model):
 
 
 class Transaction(models.Model):
+    TYPE_CHOICES = [
+        ('INCOME', 'Income'),
+        ('EXPENSE', 'Expense'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="transactions")
+    card = models.ForeignKey(Card, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    type = models.CharField(max_length=10, choices=Category.TYPE_CHOICES)
+    type = models.CharField(max_length=7, choices=TYPE_CHOICES)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    currency = models.CharField(max_length=10, default="UZS")
-    date = models.DateTimeField(auto_now_add=True)
+    currency = models.CharField(max_length=10, choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')])
     note = models.TextField(blank=True, null=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.type} - {self.amount} {self.currency}"
+        return f"{self.user} - {self.type} - {self.amount} {self.currency}"
 
 class Budget(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    limit_amount = models.DecimalField(max_digits=14, decimal_places=2 , default=0.00)
-    currency = models.CharField(max_length=3, choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')] ,default ='UZS')
+    limit_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+    currency = models.CharField(
+        max_length=3,
+        choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')],
+        default='UZS'
+    )
     start_date = models.DateField()
     end_date = models.DateField()
 
     def __str__(self):
         return f"{self.user} - {self.category.name} - {self.limit_amount}"
-
 
 class Report(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

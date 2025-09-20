@@ -14,22 +14,26 @@ from django.contrib.auth.models import User
 @login_required
 def dashboard(request):
     currency = request.GET.get('currency', 'UZS')
-    income = Transaction.objects.filter(user=request.user, type="income", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
-    expense = Transaction.objects.filter(user=request.user, type="expense", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
+    income = Transaction.objects.filter(user=request.user, type="INCOME", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
+    expense = Transaction.objects.filter(user=request.user, type="EXPENSE", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
     balance = sum(card.balance for card in Card.objects.filter(user=request.user, currency=currency))
-    categories = Category.objects.all()
+    categories = Category.objects.filter(user=request.user)
     cards = Card.objects.filter(user=request.user)
 
-    # Byudjet ogohlantirishlari
     budgets = Budget.objects.filter(user=request.user, currency=currency)
     budget_warnings = []
     for budget in budgets:
-        spent = Transaction.objects.filter(user=request.user, category=budget.category, type='expense', currency=currency).aggregate(total=Sum('amount'))['total'] or 0
-        if spent > budget.amount:
+        spent = Transaction.objects.filter(
+            user=request.user,
+            category=budget.category,
+            type='EXPENSE',
+            currency=currency
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        if spent > budget.limit_amount:
             budget_warnings.append({
                 'category': budget.category.name,
                 'spent': spent,
-                'budget': budget.amount
+                'budget': budget.limit_amount
             })
 
     return render(request, "dashboard.html", {
@@ -42,13 +46,19 @@ def dashboard(request):
         "budget_warnings": budget_warnings
     })
 
+
 @login_required
 def add_transaction(request):
+    print(1111, request)
     if request.method == "POST":
-        form = TransactionForm(request.user, request.POST)
+        form = TransactionForm(request.POST or None, user=request.user)
         if form.is_valid():
             transaction = form.save(commit=False)
             card = transaction.card
+
+            if card.user != request.user:
+                messages.error(request, "Ruxsatsiz karta tanlandi.")
+                return redirect("add_transaction")
 
             if transaction.type == "expense":
                 if card.balance >= transaction.amount:
@@ -67,20 +77,24 @@ def add_transaction(request):
             messages.success(request, "Tranzaksiya muvaffaqiyatli qo‘shildi!")
             return redirect("home")
     else:
-        form = TransactionForm(request.user)
+        form = TransactionForm(user=request.user)
 
     return render(request, "add_transaction.html", {"form": form})
+
 
 @login_required
 def add_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
-            form.save()
+            category = form.save(commit=False)
+            category.user = request.user
+            category.save()
             return redirect('home')
     else:
         form = CategoryForm()
     return render(request, 'add_category.html', {'form': form})
+
 
 @login_required
 def add_budget(request):

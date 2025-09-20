@@ -6,26 +6,32 @@ class TransactionForm(forms.ModelForm):
         model = Transaction
         fields = ['card', 'category', 'type', 'amount', 'currency', 'note']
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['card'].queryset = Card.objects.filter(user=user)
+        if user:
+            self.fields['card'].queryset = Card.objects.filter(user=user)
+        else:
+            self.fields['card'].queryset = Card.objects.none()
         self.fields['category'].queryset = Category.objects.all()
-
 
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'type', 'icon']
+        fields = ['name' , 'icon']
 
 class BudgetForm(forms.ModelForm):
     class Meta:
         model = Budget
-        fields = ['category', 'limit_amount', 'currency']
+        fields = ['category', 'limit_amount', 'currency', 'start_date', 'end_date']
         widgets = {
             'category': forms.Select(attrs={'class': 'w-full p-2 border rounded-md'}),
-            'amount': forms.NumberInput(attrs={'placeholder': 'Enter budget amount'}),
+            'limit_amount': forms.NumberInput(attrs={'placeholder': 'Enter budget amount'}),
             'currency': forms.Select(choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')]),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
 class DiagnosisForm(forms.ModelForm):
     class Meta:
         model = Diagnosis
@@ -34,13 +40,14 @@ class DiagnosisForm(forms.ModelForm):
 class CardForm(forms.ModelForm):
     class Meta:
         model = Card
-        fields = ['card_number', 'balance', 'currency', 'card_type']
+        fields = ['card_holder', 'card_number', 'balance', 'currency', 'card_type']
         widgets = {
             'card_number': forms.TextInput(attrs={'placeholder': 'Enter card number (16 digits)'}),
             'balance': forms.NumberInput(attrs={'placeholder': 'Enter balance'}),
             'currency': forms.Select(choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')]),
             'card_type': forms.Select(choices=[('Visa', 'Visa'), ('MasterCard', 'MasterCard'), ('Uzcard', 'Uzcard')]),
         }
+
 class StatisticsForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
