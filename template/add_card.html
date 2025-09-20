@@ -8,13 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* Soddalashtirilgan CSS */
-    .header-bg {
-      background-color: #1e40af;
-    }
-    .input-field {
-      transition: all 0.2s ease;
-    }
+    .header-bg { background-color: #1e40af; }
+    .input-field { transition: all 0.2s ease; }
     .input-field:focus {
       border-color: #1e40af;
       box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
@@ -24,13 +19,10 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
     }
-    .btn-primary {
-      background-color: #1e40af;
-      transition: background-color 0.2s ease;
-    }
-    .btn-primary:hover {
-      background-color: #1e3a8a;
-    }
+    .btn-primary { background-color: #1e40af; transition: background-color 0.2s ease; }
+    .btn-primary:hover { background-color: #1e3a8a; }
+    .loader { display: none; }
+    .loader.active { display: flex; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
@@ -52,7 +44,6 @@
           <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
           <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
         </select>
-      </form>
     </nav>
   </header>
 
@@ -61,41 +52,52 @@
     <section class="mb-6">
       <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Add Card" %}</h2>
       <div class="bg-white p-4 rounded-lg shadow-md">
-        <form method="post" class="space-y-4">
+        {% if form.errors %}
+          <div class="bg-red-100 p-4 rounded-lg shadow-md mb-4">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <p class="text-red-600 text-sm">{{ error }}</p>
+              {% endfor %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <form method="post" class="space-y-4" id="addCardForm">
           {% csrf_token %}
+          <!-- Card Number -->
           <div>
-            <label for="card_number" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Card Number" %}</label>
-            <input
-              type="text"
-              name="card_number"
-              id="card_number"
-              class="w-full p-2 border rounded-md input-field"
-              placeholder="{% trans 'Enter card number (16 digits)' %}"
-              value="{{ form.card_number.value|default_if_none:'' }}"
-              required
-            >
+            <label for="{{ form.card_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {% trans "Card Number" %}
+            </label>
+            <input type="text" name="card_number" id="{{ form.card_number.id_for_label }}"
+                   class="w-full p-2 border rounded-md input-field"
+                   placeholder="{% trans 'Enter 16-digit card number' %}"
+                   value="{{ form.card_number.value|default_if_none:'' }}"
+                   required>
             {% if form.card_number.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.card_number.errors }}</p>
             {% endif %}
           </div>
+          <!-- Balance -->
           <div>
-            <label for="balance" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Balance" %}</label>
-            <input
-              type="number"
-              name="balance"
-              id="balance"
-              class="w-full p-2 border rounded-md input-field"
-              placeholder="{% trans 'Enter balance' %}"
-              value="{{ form.balance.value|default_if_none:'0' }}"
-              required
-            >
+            <label for="{{ form.balance.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {% trans "Balance" %}
+            </label>
+            <input type="number" name="balance" id="{{ form.balance.id_for_label }}"
+                   class="w-full p-2 border rounded-md input-field"
+                   placeholder="{% trans 'Enter initial balance' %}"
+                   value="{{ form.balance.value|default_if_none:'0' }}"
+                   step="0.01" required>
             {% if form.balance.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.balance.errors }}</p>
             {% endif %}
           </div>
+          <!-- Currency -->
           <div>
-            <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Currency" %}</label>
-            <select name="currency" id="currency" class="w-full p-2 border rounded-md input-field">
+            <label for="{{ form.currency.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {% trans "Currency" %}
+            </label>
+            <select name="currency" id="{{ form.currency.id_for_label }}"
+                    class="w-full p-2 border rounded-md input-field" required>
               <option value="UZS" {% if form.currency.value == 'UZS' %}selected{% endif %}>UZS</option>
               <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
               <option value="EUR" {% if form.currency.value == 'EUR' %}selected{% endif %}>EUR</option>
@@ -104,22 +106,35 @@
               <p class="text-red-500 text-xs mt-1">{{ form.currency.errors }}</p>
             {% endif %}
           </div>
+          <!-- Card Type -->
           <div>
-            <label for="card_type" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Card Type" %}</label>
-            <select name="card_type" id="card_type" class="w-full p-2 border rounded-md input-field">
-              <option value="Visa" {% if form.card_type.value == 'Visa' %}selected{% endif %}>Visa</option>
-              <option value="MasterCard" {% if form.card_type.value == 'MasterCard' %}selected{% endif %}>MasterCard</option>
-              <option value="Uzcard" {% if form.card_type.value == 'Uzcard' %}selected{% endif %}>Uzcard</option>
+            <label for="{{ form.card_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {% trans "Card Type" %}
+            </label>
+            <select name="card_type" id="{{ form.card_type.id_for_label }}"
+                    class="w-full p-2 border rounded-md input-field" required>
+              <option value="visa" {% if form.card_type.value == 'visa' %}selected{% endif %}>Visa</option>
+              <option value="mastercard" {% if form.card_type.value == 'mastercard' %}selected{% endif %}>MasterCard</option>
+              <option value="uzcard" {% if form.card_type.value == 'uzcard' %}selected{% endif %}>UzCard</option>
             </select>
             {% if form.card_type.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.card_type.errors }}</p>
             {% endif %}
           </div>
-          <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-medium text-sm">{% trans "Add Card" %}</button>
+          <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-medium text-sm flex items-center justify-center">
+            <span>{% trans "Add Card" %}</span>
+            <i class="fa-solid fa-spinner fa-spin ml-2 hidden" id="loaderIcon"></i>
+          </button>
         </form>
       </div>
     </section>
   </main>
 
+  <script>
+    // Loader animatsiyasi
+    document.getElementById('addCardForm').addEventListener('submit', function() {
+      document.getElementById('loaderIcon').classList.remove('hidden');
+    });
+  </script>
 </body>
 </html>

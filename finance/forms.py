@@ -40,7 +40,7 @@ class DiagnosisForm(forms.ModelForm):
 class CardForm(forms.ModelForm):
     class Meta:
         model = Card
-        fields = ['card_holder', 'card_number', 'balance', 'currency', 'card_type']
+        fields = [ 'card_number', 'balance', 'currency', 'card_type']
         widgets = {
             'card_number': forms.TextInput(attrs={'placeholder': 'Enter card number (16 digits)'}),
             'balance': forms.NumberInput(attrs={'placeholder': 'Enter balance'}),

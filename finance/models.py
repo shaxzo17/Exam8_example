@@ -18,24 +18,19 @@ class Category(models.Model):
     def __str__(self):
         return f"{self.name} ({self.type})"
 
-
 class Card(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    card_holder = models.CharField(max_length=100)
-    card_number = models.CharField(max_length=16)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
-    currency = models.CharField(max_length=10, choices = [
-            ('UZS', 'Uzbek Sums'),
-            ('USD', 'US Dollar'),
-            ('EUR', 'Euro'),
-        ])
-    card_type = models.CharField(max_length=20,
-                                 choices=[('Visa', 'Visa'), ('MasterCard', 'MasterCard'), ('Uzcard', 'Uzcard')] ,
-                                 default = 'Uzcard' )
-    created_at = models.DateTimeField(auto_now_add=True)
+    card_number = models.CharField(max_length=16, unique=True)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    currency = models.CharField(max_length=3, choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')], default='UZS')
+    card_type = models.CharField(max_length=20, choices=[
+        ('visa', 'Visa'),
+        ('mastercard', 'MasterCard'),
+        ('uzcard', 'UzCard')
+    ])
 
     def __str__(self):
-        return f"{self.card_holder} - {self.card_number[-4:]}"
+        return f"{self.card_type} - **** **** **** {self.card_number[-4:]} ({self.currency})"
 
 
 class Transaction(models.Model):
@@ -48,7 +43,7 @@ class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     type = models.CharField(max_length=7, choices=TYPE_CHOICES)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    currency = models.CharField(max_length=10, choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')])
+    currency = models.CharField(max_length=10, choices=[('UZS', 'UZS'), ('USD', 'USD'), ('EUR', 'EUR')], default="UZS")
     note = models.TextField(blank=True, null=True)
     date = models.DateTimeField(auto_now_add=True)
 

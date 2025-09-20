@@ -13,74 +13,69 @@ from django.contrib.auth.models import User
 
 @login_required
 def dashboard(request):
-    currency = request.GET.get('currency', 'UZS')
-    income = Transaction.objects.filter(user=request.user, type="INCOME", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
-    expense = Transaction.objects.filter(user=request.user, type="EXPENSE", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
-    balance = sum(card.balance for card in Card.objects.filter(user=request.user, currency=currency))
-    categories = Category.objects.filter(user=request.user)
-    cards = Card.objects.filter(user=request.user)
+    currency = request.GET.get('currency')
+    if not currency:
+        first_card = Card.objects.filter(user=request.user).first()
+        currency = first_card.currency if first_card else 'UZS'
 
-    budgets = Budget.objects.filter(user=request.user, currency=currency)
-    budget_warnings = []
-    for budget in budgets:
-        spent = Transaction.objects.filter(
-            user=request.user,
-            category=budget.category,
-            type='EXPENSE',
-            currency=currency
-        ).aggregate(total=Sum('amount'))['total'] or 0
-        if spent > budget.limit_amount:
-            budget_warnings.append({
-                'category': budget.category.name,
-                'spent': spent,
-                'budget': budget.limit_amount
-            })
+    qs = Transaction.objects.filter(user=request.user)
+
+    income = qs.filter(type="INCOME", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
+    expense = qs.filter(type="EXPENSE", currency=currency).aggregate(total=Sum("amount"))["total"] or 0
+
+    balance = Card.objects.filter(user=request.user, currency=currency).aggregate(total=Sum("balance"))["total"] or 0
+
+    last_transactions = qs.filter(currency=currency).order_by("-date")[:5]
+
+    currencies = Card.objects.filter(user=request.user).values_list('currency', flat=True).distinct()
 
     return render(request, "dashboard.html", {
         "income": income,
         "expense": expense,
         "balance": balance,
-        "categories": categories,
-        "cards": cards,
+        "categories": Category.objects.filter(user=request.user),
+        "cards": Card.objects.filter(user=request.user),
         "currency": currency,
-        "budget_warnings": budget_warnings
+        "last_transactions": last_transactions,
+        "currencies": currencies,
     })
 
 
 @login_required
 def add_transaction(request):
-    print(1111, request)
     if request.method == "POST":
-        form = TransactionForm(request.POST or None, user=request.user)
+        form = TransactionForm(request.POST, user=request.user)
         if form.is_valid():
-            transaction = form.save(commit=False)
-            card = transaction.card
-
-            if card.user != request.user:
-                messages.error(request, "Ruxsatsiz karta tanlandi.")
-                return redirect("add_transaction")
-
-            if transaction.type == "expense":
-                if card.balance >= transaction.amount:
-                    card.balance -= transaction.amount
-                else:
+            try:
+                transaction = form.save(commit=False)
+                card = transaction.card
+                if transaction.currency != card.currency:
+                    messages.error(request, "Tranzaksiya valyutasi karta valyutasiga mos kelmaydi!")
+                    return render(request, "add_transaction.html", {"form": form})
+                if transaction.type == "EXPENSE" and card.balance < transaction.amount:
                     messages.error(request, "Kartada mablag‘ yetarli emas!")
-                    return redirect("add_transaction")
-            elif transaction.type == "income":
-                card.balance += transaction.amount
+                    return render(request, "add_transaction.html", {"form": form})
 
-            card.save()
-            transaction.user = request.user
-            transaction.currency = card.currency
-            transaction.save()
+                if transaction.type == "INCOME":
+                    card.balance += transaction.amount
+                else:
+                    card.balance -= transaction.amount
 
-            messages.success(request, "Tranzaksiya muvaffaqiyatli qo‘shildi!")
-            return redirect("home")
+                card.save()
+                transaction.user = request.user
+                transaction.currency = card.currency
+                transaction.date = timezone.now()
+                transaction.save()
+                messages.success(request, "Tranzaksiya muvaffaqiyatli qo‘shildi!")
+                return redirect("home")
+            except Exception as e:
+                logger.error(f"Tranzaksiya qo‘shishda xato: {str(e)}")
+                messages.error(request, f"Xato yuz berdi: {str(e)}")
+        else:
+            messages.error(request, "Forma to‘ldirishda xatolik! Iltimos, maydonlarni tekshiring.")
     else:
-        form = TransactionForm(user=request.user)
-
+        form = TransactionForm(user=request.user, initial={'currency': request.GET.get('currency', 'UZS')})
     return render(request, "add_transaction.html", {"form": form})
-
 
 @login_required
 def add_category(request):
@@ -176,19 +171,33 @@ def card_list(request):
     cards = Card.objects.filter(user=request.user)
     return render(request, 'card_list.html', {'cards': cards})
 
+
 @login_required
 def add_card(request):
     if request.method == 'POST':
         form = CardForm(request.POST)
         if form.is_valid():
-            card = form.save(commit=False)
-            card.user = request.user
-            card.save()
-            messages.success(request, "Karta muvaffaqiyatli qo‘shildi!")
-            return redirect('card-list')
+            try:
+                card = form.save(commit=False)
+                card.user = request.user
+                card.card_number = ''.join(filter(str.isdigit, card.card_number))
+                if len(card.card_number) != 16:
+                    messages.error(request, "Karta raqami 16 raqamdan iborat bo‘lishi kerak!")
+                    return render(request, 'add_card.html', {'form': form})
+                card.save()
+                messages.success(request, "Karta muvaffaqiyatli qo‘shildi!")
+                logger.info(f"Karta qo‘shildi: {card.card_number} foydalanuvchi {request.user.username} tomonidan")
+                return redirect('card-list')
+            except Exception as e:
+                logger.error(f"Karta qo‘shishda xato: {str(e)}")
+                messages.error(request, f"Xato yuz berdi: {str(e)}")
+        else:
+            logger.warning(f"Forma xatosi: {form.errors}")
+            messages.error(request, "Forma to‘ldirishda xatolik! Iltimos, maydonlarni tekshiring.")
     else:
         form = CardForm()
     return render(request, 'add_card.html', {'form': form})
+
 
 @login_required
 def transfer_money(request, card_id):
@@ -242,15 +251,15 @@ def transfer_money(request, card_id):
 def category_detail(request, cat_id):
     category = get_object_or_404(Category, id=cat_id)
     currency = request.GET.get('currency', 'UZS')
-    transactions = Transaction.objects.filter(user=request.user, category=category, currency=currency).order_by('-date')
-    total_income = transactions.filter(type='income').aggregate(total=Sum('amount'))['total'] or 0
-    total_expense = transactions.filter(type='expense').aggregate(total=Sum('amount'))['total'] or 0
-
+    transactions = Transaction.objects.filter(user=request.user, category=category).order_by('-date')
+    qs = Transaction.objects.filter(user=request.user)
+    income = qs.filter(type="INCOME").aggregate(total=Sum("amount"))["total"] or 0
+    expense = qs.filter(type="EXPENSE").aggregate(total=Sum("amount"))["total"] or 0
     return render(request, 'category_detail.html', {
         'category': category,
         'transactions': transactions,
-        'total_income': total_income,
-        'total_expense': total_expense,
+        'total_income': income,
+        'total_expense': expense,
         'currency': currency
     })
 
@@ -269,16 +278,20 @@ def statistics(request):
 
     period_type = request.POST.get("period_type", "WEEKLY")
     currency = request.POST.get("currency", "UZS")
-
+    qs = Transaction.objects.filter(user=request.user)
     transactions = Transaction.objects.filter(
         user=request.user,
         date__range=[start_date, end_date],
         currency=currency
     )
 
-    income = transactions.filter(type="income").aggregate(total=Sum("amount"))["total"] or 0
-    expense = transactions.filter(type="expense").aggregate(total=Sum("amount"))["total"] or 0
+    income = qs.filter(type="INCOME").aggregate(total=Sum("amount"))["total"] or 0
+    expense = qs.filter(type="EXPENSE").aggregate(total=Sum("amount"))["total"] or 0
     balance = income - expense
+    print("DEBUG CURRENCY:", currency)
+    print("DEBUG TRANSACTIONS:", list(qs.values("id", "type", "currency", "amount")))
+    print(income)
+    print(expense)
 
     stats = []
     if period_type == "WEEKLY":
