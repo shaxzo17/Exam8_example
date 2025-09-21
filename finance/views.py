@@ -203,7 +203,6 @@ def add_card(request):
 def transfer_money(request, card_id):
     card = get_object_or_404(Card, id=card_id, user=request.user)
     categories = Category.objects.all()
-
     if request.method == 'POST':
         amount = Decimal(request.POST.get('amount'))
         operation = request.POST.get('operation')
