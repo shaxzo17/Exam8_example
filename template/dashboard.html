@@ -1,10 +1,10 @@
-{% load static i18n %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
+  {% load static i18n %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% trans "Dashboard" %}</title>
+  <title>Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -54,9 +54,11 @@
 
   <!-- Header -->
   <header class="header-bg text-white p-5 flex justify-between items-center sticky top-0 z-10 modern-shadow">
-    <h1 class="text-2xl md:text-3xl font-bold">{% trans "Finance App" %}</h1>
+    <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+          <i class="fa-solid fa-wallet mr-2"></i> Finance App
+    </h1>
     <nav class="flex space-x-3 md:space-x-6">
-      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium"> Dashboard </a>
       <a href="{% url 'add-card' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Add Card" %}</a>
       <a href="{% url 'card-list' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "My Cards" %}</a>
       <a href="{% url 'statistics' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Statistics" %}</a>

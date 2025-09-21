@@ -38,21 +38,13 @@
   <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
     <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
     <nav class="flex space-x-3 md:space-x-5">
-      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium"> Dashboard </a>
       <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
       <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
       <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
       <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
         <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
       </a>
-      <form action="uz" method="post" class="flex items-center">
-        {% csrf_token %}
-        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
-          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
-          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
-          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
-        </select>
-      </form>
     </nav>
   </header>
 

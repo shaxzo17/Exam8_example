@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profilni tahrirlash | Conditioners</title>
+  <title>Profilni tahrirlash | Finance app</title>
   <style>
     :root {
       --primary: #0077b6;
@@ -277,12 +277,15 @@
 </head>
 <body>
   <header>
-    <div class="logo">Conditioners</div>
-    <nav>
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'conditioners' %}">Conditioners</a>
-      <a href="{% url 'contact' %}">Contact</a>
-      <a href="{% url 'korzinka' %}">🛒 Korzinka</a>
+    <div class="logo">Finance app</div>
+    <nav class="flex space-x-3 md:space-x-6">
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium"> Dashboard </a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-base md:text-lg font-medium"> Add Card</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-base md:text-lg font-medium">My Cards</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-base md:text-lg font-medium">Statistics</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-base md:text-lg font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> Profile
+      </a>
     </nav>
   </header>
 

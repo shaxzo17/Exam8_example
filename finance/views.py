@@ -251,15 +251,19 @@ def category_detail(request, cat_id):
     category = get_object_or_404(Category, id=cat_id)
     currency = request.GET.get('currency', 'UZS')
     transactions = Transaction.objects.filter(user=request.user, category=category).order_by('-date')
-    qs = Transaction.objects.filter(user=request.user)
+    qs = Transaction.objects.filter(user=request.user, category=category)
     income = qs.filter(type="INCOME").aggregate(total=Sum("amount"))["total"] or 0
     expense = qs.filter(type="EXPENSE").aggregate(total=Sum("amount"))["total"] or 0
+    currencies = Card.objects.filter(user=request.user).values_list('currency', flat=True).distinct()
+
     return render(request, 'category_detail.html', {
         'category': category,
         'transactions': transactions,
         'total_income': income,
         'total_expense': expense,
-        'currency': currency
+        'currency': currency,
+        'currencies':currencies
+
     })
 
 @login_required

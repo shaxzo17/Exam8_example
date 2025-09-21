@@ -1,7 +1,7 @@
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  {% load static i18n %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% trans "Add Transaction" %}</title>
@@ -9,105 +9,124 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     .header-bg {
-      background-color: #1e40af;
+      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
     }
     .input-field {
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 1rem;
     }
     .input-field:focus {
       border-color: #1e40af;
-      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+      box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.2);
     }
     .card-hover:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
     }
     .btn-primary {
-      background-color: #1e40af;
-      transition: background-color 0.2s ease;
+      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
+      transition: all 0.3s ease;
+      border-radius: 8px;
     }
     .btn-primary:hover {
-      background-color: #1e3a8a;
+      background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .section-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .modern-shadow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .label-style {
+      font-weight: 600;
+      color: #1e40af;
+      transition: color 0.2s ease;
+    }
+    .label-style:hover {
+      color: #2563eb;
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-50 font-sans antialiased">
 
   <!-- Header -->
-  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
-    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
-    <nav class="flex space-x-3 md:space-x-5">
-      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
-      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
-      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
-      <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
-      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+  <header class="header-bg text-white p-5 flex justify-between items-center sticky top-0 z-10 modern-shadow">
+    <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+      <i class="fa-solid fa-wallet mr-2"></i> {% trans "Finance App" %}
+    </h1>
+    <nav class="flex space-x-3 md:space-x-6">
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium"> Dashboard </a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Statistics" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-base md:text-lg font-medium flex items-center">
         <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
       </a>
-      <form action="uz" method="post" class="flex items-center">
-        {% csrf_token %}
-        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
-          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
-          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
-          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
-        </select>
-      </form>
     </nav>
   </header>
 
-  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+  <main class="p-4 md:p-6 max-w-5xl mx-auto">
     <!-- Tranzaksiya qo‘shish formasi -->
-    <section class="mb-6">
-      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Add Transaction" %}</h2>
-      <div class="bg-white p-4 rounded-lg shadow-md">
-        <form method="post" class="space-y-4">
+    <section class="mb-6 section-gradient modern-shadow">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fa-solid fa-plus-circle mr-2 text-blue-600"></i> {% trans "Add Transaction" %}
+      </h2>
+      <div class="bg-white p-6 rounded-lg modern-shadow">
+        <form method="post" class="space-y-6">
           {% csrf_token %}
           <div>
-            <label for="card" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Card" %}</label>
+            <label for="card" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Card" %}</label>
             {{ form.card }}
             {% if form.card.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.card.errors }}</p>
             {% endif %}
           </div>
           <div>
-            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Category" %}</label>
+            <label for="category" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Category" %}</label>
             {{ form.category }}
             {% if form.category.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.category.errors }}</p>
             {% endif %}
           </div>
           <div>
-            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Type" %}</label>
+            <label for="type" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Type" %}</label>
             {{ form.type }}
             {% if form.type.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.type.errors }}</p>
             {% endif %}
           </div>
           <div>
-            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Amount" %}</label>
+            <label for="amount" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Amount" %}</label>
             {{ form.amount }}
             {% if form.amount.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.amount.errors }}</p>
             {% endif %}
           </div>
           <div>
-            <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Currency" %}</label>
+            <label for="currency" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Currency" %}</label>
             {{ form.currency }}
             {% if form.currency.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.currency.errors }}</p>
             {% endif %}
           </div>
           <div>
-            <label for="note" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Note" %}</label>
+            <label for="note" class="block text-base md:text-lg font-bold text-blue-600 mb-2 label-style">{% trans "Note" %}</label>
             {{ form.note }}
             {% if form.note.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.note.errors }}</p>
             {% endif %}
           </div>
-          <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-medium text-sm">{% trans "Confirm" %}</button>
+          <button type="submit" class="w-full btn-primary text-white py-3 rounded-lg font-medium text-base flex items-center justify-center modern-shadow hover:scale-105">
+            <i class="fa-solid fa-check mr-2"></i> {% trans "Confirm" %}
+          </button>
         </form>
-
       </div>
     </section>
   </main>

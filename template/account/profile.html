@@ -243,12 +243,19 @@
 </head>
 <body>
   <header>
-    <div class="logo">Dashboard</div>
-    <nav>
-      <a href="{% url 'home' %}">Home</a>
-           <a class="nav-link" href="{% url 'add_category' %}">Category</a>
-      <a class="nav-link" href="{% url 'add_budget' %}">Budget</a>
-      <a class="nav-link" href="">Diagnosis</a>
+    <div class="logo">
+      <h3 class="text-2xl md:text-3xl font-bold flex items-center">
+          <i class="fa-solid fa-wallet mr-2"></i> Finance App
+    </h3>
+    </div>
+    <nav class="flex space-x-3 md:space-x-6">
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium"> Dashboard </a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-base md:text-lg font-medium"> Add Card</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-base md:text-lg font-medium">My Cards</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-base md:text-lg font-medium">Statistics</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-base md:text-lg font-medium flex items-center">
+        <i class="fa-solid fa-user mr-1"></i> Profile
+      </a>
     </nav>
   </header>
 
