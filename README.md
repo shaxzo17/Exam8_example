@@ -42,21 +42,6 @@
                                     Summary va daily stats (kunlik va start-end date oralig‘ida)
                                     
                                     
-                                API Endpoints
-                                
-                                    /categories/ — Categories CRUD
-                                    
-                                    /budgets/ — Budgets CRUD
-                                    
-                                    /transactions/ — Transactions CRUD
-                                    
-                                    /transactions/income/ — faqat INCOME lar
-                                    
-                                    /transactions/expense/ — faqat EXPENSE lar
-                                    
-                                    /transactions/summary/ — umumiy balans, income va expense
-                                    
-                                    /transactions/daily_stats/?date=YYYY-MM-DD — tanlangan kun statistika
                                 
                                 
                                 🧩 Loyihaning tuzilishi
