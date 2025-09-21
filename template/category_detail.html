@@ -1,7 +1,7 @@
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  {% load static i18n %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ category.name }}</title>
@@ -10,152 +10,181 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     .header-bg {
-      background-color: #1e40af;
+      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
     }
     .input-field {
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
     .input-field:focus {
       border-color: #1e40af;
-      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
+      box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.2);
     }
     .card-hover:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
     }
     .btn-primary {
-      background-color: #1e40af;
-      transition: background-color 0.2s ease;
+      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
+      transition: all 0.3s ease;
+      border-radius: 8px;
     }
     .btn-primary:hover {
-      background-color: #1e3a8a;
+      background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .chart-container {
+      position: relative;
+      height: 220px;
+      width: 220px;
+      margin: 0 auto;
+    }
+    .section-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .modern-shadow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-50 font-sans antialiased">
 
   <!-- Header -->
-  <header class="header-bg text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
-    <h1 class="text-lg md:text-xl font-bold">{% trans "Finance App" %}</h1>
-    <nav class="flex space-x-3 md:space-x-5">
-      <a href="{% url 'home' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Dashboard" %}</a>
-      <a href="{% url 'add-card' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Add Card" %}</a>
-      <a href="{% url 'card-list' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "My Cards" %}</a>
-      <a href="{% url 'statistics' %}" class="hover:underline text-sm md:text-base font-medium">{% trans "Statistics" %}</a>
-      <a href="{% url 'profile' %}" class="hover:underline text-sm md:text-base font-medium flex items-center">
+  <header class="header-bg text-white p-5 flex justify-between items-center sticky top-0 z-10 modern-shadow">
+    <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Finance app" %}</a>
+    </h1>
+    <nav class="flex space-x-3 md:space-x-6">
+      <a href="{% url 'home' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Dashboard" %}</a>
+      <a href="{% url 'add-card' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Add Card" %}</a>
+      <a href="{% url 'card-list' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "My Cards" %}</a>
+      <a href="{% url 'statistics' %}" class="hover:underline text-base md:text-lg font-medium">{% trans "Statistics" %}</a>
+      <a href="{% url 'profile' %}" class="hover:underline text-base md:text-lg font-medium flex items-center">
         <i class="fa-solid fa-user mr-1"></i> {% trans "Profile" %}
       </a>
-      <form action="uz" method="post" class="flex items-center">
-        {% csrf_token %}
-        <select name="language" onchange="this.form.submit()" class="bg-transparent text-white text-sm">
-          <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>{% trans "Uzbek" %}</option>
-          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>{% trans "English" %}</option>
-          <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
-        </select>
-      </form>
     </nav>
   </header>
 
-  <main class="p-4 md:p-6 max-w-4xl mx-auto">
+  <main class="p-4 md:p-6 max-w-5xl mx-auto">
     <!-- Category Title -->
-    <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
-      <i class="fa-solid {{ category.icon|default:'fa-folder' }} text-2xl text-blue-600"></i>
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-2 section-gradient modern-shadow p-4">
+      <i class="fa-solid {{ category.icon|default:'fa-folder' }} text-3xl text-blue-600 animate-pulse"></i>
       <span>{{ category.name }}</span>
     </h1>
 
+
     <!-- Stats -->
-    <section class="mb-6">
+    <section class="mb-6 section-gradient modern-shadow">
       <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Overview" %}</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
-          <h3 class="text-sm font-medium text-green-600">{% trans "Income" %}</h3>
+        <div class="bg-white p-4 rounded-lg modern-shadow text-center card-hover">
+          <h3 class="text-sm font-medium text-green-600">
+            <span class="text-green-600 font-bold">+</span> {% trans "Income" %}
+          </h3>
           <p class="text-lg font-bold text-gray-800">{{ total_income|default:0 }} {{ currency|default:'UZS' }}</p>
         </div>
-        <div class="bg-white p-4 rounded-lg shadow-md text-center card-hover">
-          <h3 class="text-sm font-medium text-red-600">{% trans "Expense" %}</h3>
+        <div class="bg-white p-4 rounded-lg modern-shadow text-center card-hover">
+          <h3 class="text-sm font-medium text-red-600">
+            <span class="text-red-600 font-bold">-</span> {% trans "Expense" %}
+          </h3>
           <p class="text-lg font-bold text-gray-800">{{ total_expense|default:0 }} {{ currency|default:'UZS' }}</p>
         </div>
       </div>
     </section>
 
-    <!-- Transactions list -->
-    <section class="mb-6">
-      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Transactions" %}</h2>
-      <div class="bg-white p-4 rounded-lg shadow-md">
-        {% if transactions %}
-          <ul class="space-y-2">
-            {% for t in transactions %}
-              <li class="border-b py-2 flex justify-between items-center">
-                <div>
-                  <p class="text-sm text-gray-700">{{ t.date|date:"m/d H:i" }}</p>
-                  <p class="text-sm text-gray-500">{{ t.note }}</p>
-                </div>
-                <span class="{% if t.type == 'income' %}text-green-600{% else %}text-red-600{% endif %} font-semibold text-sm">
-                  {{ t.amount }} {{ t.currency }}
-                </span>
-              </li>
+     <!-- Add Transaction tugmasi -->
+    <section class="mb-6 section-gradient modern-shadow">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <a href="{% url 'add_transaction' %}?currency={{ currency }}"
+           class="btn-primary text-white py-2 px-3 rounded-lg font-medium text-sm flex items-center justify-center w-full sm:w-44 modern-shadow">
+          <i class="fa-solid fa-plus mr-2 text-sm"></i> {% trans "Add Transaction" %}
+        </a>
+        <!-- Valyuta tanlash -->
+        <form class="flex items-center space-x-3">
+          <label for="currency" class="text-sm font-medium text-gray-700">{% trans "Currency" %}</label>
+          <select name="currency" onchange="this.form.submit()" class="p-2 border rounded-lg input-field bg-white text-sm">
+            {% for curr in currencies %}
+              <option value="{{ curr }}" {% if currency == curr %}selected{% endif %}>{{ curr }}</option>
             {% endfor %}
-          </ul>
-        {% else %}
-          <p class="text-gray-500 text-sm text-center py-4">{% trans "No transactions yet" %}</p>
-        {% endif %}
+          </select>
+        </form>
       </div>
     </section>
 
-            <!-- Pie chart -->
-<!-- Pie chart -->
-<section class="mb-6">
-  <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Statistics Chart" %}</h2>
-  <div class="bg-white p-4 rounded-lg shadow-md flex justify-center">
-    <div class="chart-container" style="width: 250px; height: 250px;">
-      <canvas id="balanceChart"></canvas>
-    </div>
-  </div>
-  <script>
-    const ctx = document.getElementById('balanceChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['{% trans "Income" %}', '{% trans "Expense" %}'],
-        datasets: [{
-          data: [{{ income|default:0 }}, {{ expense|default:0 }}],
-          backgroundColor: ['#34D399', '#F87171'],
-          borderWidth: 1,
-          borderColor: '#fff'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false, // ✅ allows fixed size (width/height from CSS)
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: { font: { size: 12 } }
+    <!-- Transactions list -->
+    <section class="mb-6 section-gradient modern-shadow">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Transactions" %}</h2>
+      <div class="bg-white p-4 rounded-lg modern-shadow space-y-3">
+        {% for t in transactions %}
+          <div class="flex justify-between items-center border-b pb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-800">
+                {{ t.get_type_display }} - {{ t.note|default:"-" }}
+              </p>
+              <p class="text-xs text-gray-500">{{ t.date|date:"d-m-Y H:i" }}</p>
+            </div>
+            <div class="text-sm font-bold {% if t.type == 'INCOME' %}text-green-600{% else %}text-red-600{% endif %}">
+              <i class="fa-solid {% if t.type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %} mr-1"></i>
+              {% if t.type == 'INCOME' %}+{% else %}-{% endif %}
+              {{ t.amount }} {{ t.currency }}
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-gray-500 text-sm text-center py-4">{% trans "No transactions yet" %}</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Pie chart -->
+    <section class="mb-6 section-gradient modern-shadow">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">{% trans "Statistics Chart" %}</h2>
+      <div class="bg-white p-4 rounded-lg modern-shadow">
+        <div class="chart-container">
+          <canvas id="balanceChart"></canvas>
+        </div>
+      </div>
+      <script>
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['{% trans "Income" %}', '{% trans "Expense" %}'],
+            datasets: [{
+              data: [{{ total_income|default:0 }}, {{ total_expense|default:0 }}],
+              backgroundColor: ['#34D399', '#F87171'],
+              borderWidth: 1,
+              borderColor: '#fff'
+            }]
           },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                if (label) {
-                  label += ': ';
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { position: 'top', labels: { font: { size: 12 } } },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    label += context.parsed + ' {{ currency|default:"UZS" }}';
+                    return label;
+                  }
                 }
-                label += context.parsed + ' {{ currency }}';
-                return label;
               }
+            },
+            animation: {
+              animateScale: true,
+              animateRotate: true
             }
           }
-        },
-        animation: {
-          animateScale: true,
-          animateRotate: true
-        }
-      }
-    });
-  </script>
-</section>
-
-
+        });
+      </script>
+    </section>
   </main>
 
 </body>
